@@ -196,7 +196,6 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
     
     func beginScrollContents(){
 
-
         //self.viewController()!.edgesForExtendedLayout = UIRectEdge.None
         
         if self.mode == Mode_Image.LocalImage {
@@ -206,9 +205,8 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
 
             if localImgArray.count >= 2 {
 
-                if timer != nil {
-                    timer.invalidate()
-                }
+                invalidateTimer()
+
                 scrollView.contentOffset = CGPointMake(self.width, 0)
                 scrollView.scrollEnabled = true
                 timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
@@ -228,9 +226,9 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             }
             
             if netImgArray.count >= 2 {
-                if timer != nil {
-                    timer.invalidate()
-                }
+
+                invalidateTimer()
+
                 scrollView.contentOffset = CGPointMake(self.width, 0)
                 scrollView.scrollEnabled = true
                 timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
@@ -315,20 +313,18 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
     
     
     func scrollViewDidScroll(scrollView: UIScrollView) {
-        
-        //print("\(self.scrollView.contentOffset)===\(self.width)")
-        
-        //正向滑动
+
+        //Foward Slide
         if scrollView.contentOffset == CGPointMake(2*self.width, 0) {
             //处理Index
             self.middleIndex += 1
             if self.middleIndex == currentModeArray.count {
                 self.middleIndex = 0
             }
-            //摆放图片
+            //Place Image
             self.locationImg()
         }
-        //反向滑动
+        //Reverse Slide
         if scrollView.contentOffset == CGPointMake(0, 0) {
             self.middleIndex -= 1
             if self.middleIndex == -1  {
@@ -343,14 +339,12 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
     //MARK 减速
     func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
         
-        
-        
     }
     
     
-    //根据当前显示Index放置图片
+    //Place Image accord to current show Index
     func locationImg(){
-        //print("选中:  \(self.middleIndex)")
+
         if Mode_Image.NetImage == self.mode {
             if netImgArray.count == 0 {
                 return;
@@ -471,15 +465,13 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
 
     
     func scrollViewWillBeginDragging(scrollView: UIScrollView) {
-        //开始拖动的时候 停止计时器
+        //When drag, Cancel Timer
         invalidateTimer()
     }
     func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        //拖动的时候 启动计时器
+        //When Stop drag, Cancel Timer
         startTimer()
     }
-
-
 
     //Cancel timer
     func invalidateTimer(){
@@ -494,8 +486,6 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         runloop.addTimer(timer, forMode: NSRunLoopCommonModes)
     }
 
-
-    
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -527,7 +517,6 @@ class CusPageControl: UIView {
             }
             btn.selected = true
             _currentIndex = newValue
-            //print("设置了新值 \(_currentIndex!)")
         }
         get{
             return _currentIndex!
@@ -593,7 +582,7 @@ class CusPageControl: UIView {
     
     init(frame: CGRect,numbers:Int) {
         super.init(frame: frame)
-        //self.backgroundColor = UIColor.greenColor()
+
         if numbers == 0 {
             
         }else{
