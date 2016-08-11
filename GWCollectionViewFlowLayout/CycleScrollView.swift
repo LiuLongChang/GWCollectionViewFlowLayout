@@ -12,11 +12,7 @@ import UIKit
 
 
 import SnapKit
-
 import Kingfisher
-
-
-
 
 
 enum Mode_Image {
@@ -163,7 +159,6 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         
         cusPage = CusPageControl(frame: CGRectZero,numbers: 0)
         self.addSubview(cusPage)
-        //cusPage.backgroundColor = UIColor.cyanColor()
         cusPage.snp.makeConstraints { (make) in
            make.centerX.equalTo(self.snp.centerX)
            make.width.equalTo(150)
@@ -206,12 +201,9 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             if localImgArray.count >= 2 {
 
                 invalidateTimer()
-
                 scrollView.contentOffset = CGPointMake(self.width, 0)
                 scrollView.scrollEnabled = true
-                timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
-                let runloop = NSRunLoop.currentRunLoop()
-                runloop.addTimer(self.timer, forMode: NSRunLoopCommonModes)
+                startTimer()
 
             }
 
@@ -226,20 +218,11 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             }
             
             if netImgArray.count >= 2 {
-
                 invalidateTimer()
-
                 scrollView.contentOffset = CGPointMake(self.width, 0)
                 scrollView.scrollEnabled = true
-
                 startTimer()
-
-//                timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
-//                let runloop = NSRunLoop.currentRunLoop()
-//                runloop.addTimer(self.timer, forMode: NSRunLoopCommonModes)
-                
             }
-            
         }
         
         
@@ -338,13 +321,6 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         }
         
     }
-    
-    
-    //MARK 减速
-    func scrollViewDidEndDecelerating(scrollView: UIScrollView) {
-        
-    }
-    
     
     //Place Image accord to current show Index
     func locationImg(){
