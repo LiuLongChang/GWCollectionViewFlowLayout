@@ -111,15 +111,22 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         leftImgView = makeImageView(ToView: scrollView)
         middleImgView = makeImageView(nil, ToView: scrollView)
         middleImgView.userInteractionEnabled = true
+
+        weak var weakSelf = self
         middleImgView.addSingleTapGestureRecognizerWithResponder { (tap) in
-            
+
+            //点击的时候停止计时器
+            weakSelf!.invalidateTimer()
+
             if self.mode == Mode_Image.LocalImage {
                 self.delegateLocal?.ClickItemAtIndex(self.middleIndex)
             }
             if self.mode == Mode_Image.NetImage{
                 self.delegateNet?.netClickItemAtIndex(self.middleIndex)
             }
-            
+            //点击完毕事件处理完成 启动计时器
+            weakSelf!.startTimer()
+
         }
         rightImgView = makeImageView(ToView: scrollView)
         
@@ -163,7 +170,8 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
            make.height.equalTo(30)
            make.bottom.equalTo(self.snp.bottom).offset(-20)
         }
-        weak var weakSelf = self
+        //
+
         cusPage.cusPageAction = { (btn: UIButton) in
 
             weakSelf!.invalidateTimer()
@@ -459,12 +467,15 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         cusPage.currentIndex = self.middleIndex
     }
     
-    
+
+
     
     func scrollViewWillBeginDragging(scrollView: UIScrollView) {
+        //开始拖动的时候 停止计时器
         invalidateTimer()
     }
     func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        //拖动的时候 启动计时器
         startTimer()
     }
 
@@ -476,7 +487,6 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             timer.invalidate()
         }
     }
-
     //Start timer
     func startTimer(){
         timer = NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
