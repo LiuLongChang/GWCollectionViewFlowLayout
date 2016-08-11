@@ -231,9 +231,13 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
 
                 scrollView.contentOffset = CGPointMake(self.width, 0)
                 scrollView.scrollEnabled = true
-                timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
-                let runloop = NSRunLoop.currentRunLoop()
-                runloop.addTimer(self.timer, forMode: NSRunLoopCommonModes)
+
+                startTimer()
+
+//                timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
+//                let runloop = NSRunLoop.currentRunLoop()
+//                runloop.addTimer(self.timer, forMode: NSRunLoopCommonModes)
+                
             }
             
         }
@@ -481,7 +485,7 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
     }
     //Start timer
     func startTimer(){
-        timer = NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
+        timer = NSTimer.scheduledTimerWithTimeInterval(2.5, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
         let runloop = NSRunLoop.currentRunLoop()
         runloop.addTimer(timer, forMode: NSRunLoopCommonModes)
     }
