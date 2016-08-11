@@ -150,20 +150,8 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         
         self.width = kScreen_Width
         scrollView.pagingEnabled = true
-//        scrollView.contentOffset = CGPointMake(self.width, 0)
         middleIndex = 0
-        
-        
-        
-//        self.pageControl = UIPageControl()
-//        self.addSubview(pageControl)
-//        pageControl.snp_makeConstraints { (make) in
-//            make.centerX.equalTo(self.snp_centerX)
-//            make.width.equalTo(150)
-//            make.height.equalTo(30)
-//            make.bottom.equalTo(self.snp_bottom).offset(-20)
-//        }
-//        pageControl.addTarget(self, action: #selector(CycleScrollView.changePage(_:)), forControlEvents: .ValueChanged)
+
      
         
         cusPage = CusPageControl(frame: CGRectZero,numbers: 0)
@@ -175,9 +163,12 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
            make.height.equalTo(30)
            make.bottom.equalTo(self.snp.bottom).offset(-20)
         }
+        weak var weakSelf = self
         cusPage.cusPageAction = { (btn: UIButton) in
-            
+
+            weakSelf!.invalidateTimer()
             self.changePage(btn.tag)
+            weakSelf!.startTimer()
             
         }
         
@@ -190,33 +181,23 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
     
     //点击PageControl事件
     func changePage(obj:AnyObject){
-        //middleIndex = pageControl.currentPage
-        middleIndex = cusPage.currentIndex
+        middleIndex = obj as! Int
+        //print("选中:  \(self.middleIndex)")
         self.locationImg()
     }
     
     func beginScrollContents(){
 
 
-
-        
-        
         //self.viewController()!.edgesForExtendedLayout = UIRectEdge.None
         
         if self.mode == Mode_Image.LocalImage {
             if self.delegateLocal != nil {
                 self.localImgArray = self.delegateLocal!.cycleScrollViewLocalImage()
             }
-        }
-        
-        if self.mode == Mode_Image.NetImage {
-            
-            if self.delegateNet != nil {
-                self.netImgArray = self.delegateNet!.cycleScrollViewNotImgUrls()
-            }
-            
-            if netImgArray.count >= 2 {
-                
+
+            if localImgArray.count >= 2 {
+
                 if timer != nil {
                     timer.invalidate()
                 }
@@ -225,7 +206,28 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
                 timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
                 let runloop = NSRunLoop.currentRunLoop()
                 runloop.addTimer(self.timer, forMode: NSRunLoopCommonModes)
-                
+
+            }
+
+        }
+
+
+
+        if self.mode == Mode_Image.NetImage {
+            
+            if self.delegateNet != nil {
+                self.netImgArray = self.delegateNet!.cycleScrollViewNotImgUrls()
+            }
+            
+            if netImgArray.count >= 2 {
+                if timer != nil {
+                    timer.invalidate()
+                }
+                scrollView.contentOffset = CGPointMake(self.width, 0)
+                scrollView.scrollEnabled = true
+                timer = NSTimer.scheduledTimerWithTimeInterval(3, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
+                let runloop = NSRunLoop.currentRunLoop()
+                runloop.addTimer(self.timer, forMode: NSRunLoopCommonModes)
             }
             
         }
@@ -239,10 +241,19 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             currentModeArray = self.netImgArray
         }
         if self.mode == Mode_Image.LocalImage {
-            
-            middleImgView.image = self.localImgArray[0]
-            leftImgView.image = self.localImgArray.last
-            rightImgView.image = self.localImgArray[1]
+
+            if localImgArray.count >= 2 {
+                middleImgView.image = self.localImgArray[0]
+                leftImgView.image = self.localImgArray.last
+                rightImgView.image = self.localImgArray[1]
+            }
+
+            if netImgArray.count == 1 {
+                middleImgView.image = self.localImgArray[0]
+                cusPage.hidden = true
+                scrollView.contentOffset = CGPointMake(self.width, 0)
+                scrollView.scrollEnabled = false
+            }
             
         }else if self.mode == Mode_Image.NetImage{
             
@@ -282,20 +293,12 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             }
             
         }
-        
-        
+
         if self.mode == Mode_Image.LocalImage {
-            //self.scrollView.contentSize = CGSizeMake(self.width*CGFloat(self.localImgArray.count), 0)
             self.scrollView.contentSize = CGSizeMake(self.width*CGFloat(3), 0)
-            //self.scrollView.scrollEnabled = true
-            //pageControl.numberOfPages = self.localImgArray.count
             cusPage.numberOfPages = self.localImgArray.count
-            
         }else if self.mode == Mode_Image.NetImage {
-            //self.scrollView.contentSize = CGSizeMake(self.width*CGFloat(self.netImgArray.count), 0)
             self.scrollView.contentSize = CGSizeMake(self.width*CGFloat(3), 0)
-            //self.scrollView.scrollEnabled = true
-            //pageControl.numberOfPages = self.netImgArray.count
             cusPage.numberOfPages = self.netImgArray.count
         }
         
@@ -310,16 +313,13 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
         //正向滑动
         if scrollView.contentOffset == CGPointMake(2*self.width, 0) {
             //处理Index
-            
             self.middleIndex += 1
-            
             if self.middleIndex == currentModeArray.count {
                 self.middleIndex = 0
             }
             //摆放图片
             self.locationImg()
         }
-        
         //反向滑动
         if scrollView.contentOffset == CGPointMake(0, 0) {
             self.middleIndex -= 1
@@ -343,14 +343,24 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
     //根据当前显示Index放置图片
     func locationImg(){
         //print("选中:  \(self.middleIndex)")
-        
-        if netImgArray.count == 0 {
-            return;
+        if Mode_Image.NetImage == self.mode {
+            if netImgArray.count == 0 {
+                return;
+            }
+            if netImgArray.count == 1 {
+                return;
+            }
         }
-        if netImgArray.count == 1 {
-            return;
+        if Mode_Image.LocalImage == self.mode {
+            if localImgArray.count == 0 {
+                return;
+            }
+            if localImgArray.count == 1 {
+                return;
+            }
         }
-        
+
+
         if self.middleIndex == currentModeArray.count - 1 {
             
             if self.mode == Mode_Image.LocalImage {
@@ -419,9 +429,7 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
                 self.rightImgView.image = self.localImgArray[self.middleIndex+1]
                 
             }else if(self.mode == Mode_Image.NetImage){
-                
-                
-                //print("AAAA: \(self.netImgArray.count)   ===  \(self.middleIndex)")
+
                 let url0 =  NSURL(string: self.netImgArray[self.middleIndex])
                 let url1 =  NSURL(string: self.netImgArray[self.middleIndex-1])
                 let url2 =  NSURL(string: self.netImgArray[self.middleIndex+1])
@@ -446,32 +454,37 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
             }
             
         }
-        
-        scrollView.contentOffset = CGPointMake(self.width,0)
-        //self.pageControl.currentPage = self.middleIndex
-        
-        cusPage.currentIndex = self.middleIndex
 
+        scrollView.contentOffset = CGPointMake(self.width,0)
+        cusPage.currentIndex = self.middleIndex
     }
     
     
     
     func scrollViewWillBeginDragging(scrollView: UIScrollView) {
-        
+        invalidateTimer()
+    }
+    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        startTimer()
+    }
+
+
+
+    //Cancel timer
+    func invalidateTimer(){
         if timer != nil {
             timer.invalidate()
         }
-        
     }
-    
-    func scrollViewDidEndDragging(scrollView: UIScrollView, willDecelerate decelerate: Bool) {
-        
-        
+
+    //Start timer
+    func startTimer(){
         timer = NSTimer.scheduledTimerWithTimeInterval(3.0, target: self, selector: #selector(CycleScrollView.loopAuto), userInfo: nil, repeats: true)
         let runloop = NSRunLoop.currentRunLoop()
         runloop.addTimer(timer, forMode: NSRunLoopCommonModes)
     }
-    
+
+
     
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -483,24 +496,20 @@ class CycleScrollView: UIView,UIScrollViewDelegate {
 
 
 
-
+//自定义PageControl
 typealias CusPageAction = (UIButton) -> Void
 
 
 class CusPageControl: UIView {
     
     var cusPageAction : CusPageAction?
-    
-    
     var btnArr : NSMutableArray! = []
     
     
     private var _currentIndex : Int?
     var currentIndex : Int {
-        
-        
+
         set{
-            
             let btn : UIButton = btnArr[newValue] as! UIButton
             for obj in btnArr {
                 let btnT : UIButton = obj as! UIButton
@@ -508,18 +517,14 @@ class CusPageControl: UIView {
             }
             btn.selected = true
             _currentIndex = newValue
-            
+            //print("设置了新值 \(_currentIndex!)")
         }
-        
         get{
             return _currentIndex!
         }
-        
-        
+
     }
-    
-    
-    
+
     private var _numberOfPages : Int?
     var numberOfPages : Int {
         set{
@@ -532,27 +537,10 @@ class CusPageControl: UIView {
         
     }
     
-    
     func makeIt(num:Int){
-        
-        
+
         self.btnArr = NSMutableArray()
 
-
-
-
-//        for view in self.subviews {
-//
-//            if view is UIButton {
-//                 view.removeFromSuperview()
-//            }
-//
-//        }
-
-
-
-
-        
         var preBtn : UIButton! = nil
         for idx in 0..<num {
             
@@ -560,6 +548,7 @@ class CusPageControl: UIView {
             btn.setImage(UIImage(named: "bannerIcon"), forState: .Normal)
             btn.setImage(UIImage(named: "bannerIconSelect"), forState: .Selected)
             btn.backgroundColor = UIColor.clearColor()
+            btn.tag = idx
             btn.snp.makeConstraints(closure: { (make) in
                 
                 if idx == 0 {
@@ -574,12 +563,9 @@ class CusPageControl: UIView {
                     make.centerY.equalTo(self)
                     
                     self.snp.updateConstraints(closure: { (make) in
-                        
                         make.width.equalTo(15*num+5*(num+1))
-                        
                     })
-                    
-                    
+
                 }else{
                     make.left.equalTo(preBtn.snp.right).offset(5)
                     make.width.height.equalTo(15)
@@ -587,17 +573,10 @@ class CusPageControl: UIView {
                     preBtn = btn
                 }
                 
-                
             })
-            
-            
             self.addSubview(btn)
-            
             self.btnArr.addObject(btn)
-            
         }
-
-        
         
     }
     
@@ -610,26 +589,19 @@ class CusPageControl: UIView {
         }else{
             self.makeIt(numbers)
         }
-        
     }
-    
-    
-    
+
+
     func pageClickAction(btn:UIButton){
-        
         if self.cusPageAction != nil {
             self.cusPageAction!(btn)
         }
-        
     }
-    
-    
+
+
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    
-    
     
     
 }

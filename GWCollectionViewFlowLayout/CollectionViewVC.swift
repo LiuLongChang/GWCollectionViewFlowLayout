@@ -239,9 +239,10 @@ class CollectionViewVC: UICollectionViewController,GWCollectionViewDelegateFlowL
                     header.addSubview(banner)
                     banner.snp.makeConstraints { (make) in
 
-                        make.left.right.equalTo(header)
+                        make.left.equalTo(header)
                         make.top.equalTo(0)
                         make.height.equalTo(180)
+                        make.width.equalTo(kScreen_Width)
                         
                     }
 
